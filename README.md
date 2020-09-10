@@ -1,12 +1,12 @@
 # os-scrapy-spage
 
-[![Build Status](https://www.travis-ci.org/cfhamlet/os-scrapy-aio-spage.svg?branch=master)](https://www.travis-ci.org/cfhamlet/os-scrapy-aio-spage)
-[![codecov](https://codecov.io/gh/cfhamlet/os-scrapy-aio-spage/branch/master/graph/badge.svg)](https://codecov.io/gh/cfhamlet/os-scrapy-aio-spage)
-[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/os-scrapy-aio-spage.svg)](https://pypi.python.org/pypi/os-scrapy-aio-spage)
-[![PyPI](https://img.shields.io/pypi/v/os-scrapy-aio-spage.svg)](https://pypi.python.org/pypi/os-scrapy-aio-spage)
+[![Build Status](https://www.travis-ci.org/cfhamlet/os-scrapy-spage.svg?branch=master)](https://www.travis-ci.org/cfhamlet/os-scrapy-spage)
+[![codecov](https://codecov.io/gh/cfhamlet/os-scrapy-spage/branch/master/graph/badge.svg)](https://codecov.io/gh/cfhamlet/os-scrapy-spage)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/os-scrapy-spage.svg)](https://pypi.python.org/pypi/os-scrapy-spage)
+[![PyPI](https://img.shields.io/pypi/v/os-scrapy-spage.svg)](https://pypi.python.org/pypi/os-scrapy-spage)
 
 
-This Project provide [spage](https://github.com/cfhamlet/os-spage) utilities for Scrapy.
+This project provide [spage](https://github.com/cfhamlet/os-spage) utilities for Scrapy.
 
 
 ## Install
