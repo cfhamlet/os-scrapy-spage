@@ -38,7 +38,6 @@ def _spage(item: FetchRecord, **kwargs) -> bytes:
         (InnerHeaderKeys.BATCH_ID, "batch_id", (meta, kwargs), None),
         (InnerHeaderKeys.IP_ADDRESS, "ip_address", (response, kwargs), None),
         (InnerHeaderKeys.FETCH_IP, "spider_ip", (meta, kwargs), None),
-        (InnerHeaderKeys.USER_AGENT, "user_agent", (meta, kwargs), None),
     ):
         v = get_value(k, *objs, default=dft)
         if v is not None:
@@ -74,8 +73,13 @@ def _spage(item: FetchRecord, **kwargs) -> bytes:
         size = 0 if not body else len(body)
         inner_header[InnerHeaderKeys.ORIGINAL_SIZE] = size
 
-    http_header = None
+    v = get_value("headers", request)
+    if v is not None:
+        v = v.to_unicode_dict()
+        if InnerHeaderKeys.USER_AGENT in v:
+            inner_header[InnerHeaderKeys.USER_AGENT] = v[InnerHeaderKeys.USER_AGENT]
 
+    http_header = None
     v = get_value("headers", response)
     if v is not None:
         http_header = v.to_unicode_dict()
