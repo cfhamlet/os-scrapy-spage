@@ -93,4 +93,6 @@ def _spage(item: FetchRecord, **kwargs) -> bytes:
         data=body,
     )
     spage.seek(0)
-    return spage.read()
+    o = spage.read()
+    spage.close()
+    return o
