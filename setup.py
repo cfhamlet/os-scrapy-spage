@@ -43,7 +43,7 @@ def dependency_links(files):
 
 setup(
     name="os-scrapy-spage",
-    version="0.0.4",
+    version="0.0.5",
     packages=find_packages(),
     include_package_data=True,
     license="MIT License",
