@@ -9,6 +9,7 @@ from os_spage import write
 from os_spage.common import TIME_FORMAT
 from os_spage.default_schema import InnerHeaderKeys, RecordTypes
 from scrapy.http.response import Response
+from scrapy.utils.python import to_unicode
 from twisted.python.failure import Failure
 
 
@@ -34,7 +35,7 @@ def _spage(item: FetchRecord, rvs=False, **kwargs) -> bytes:
     meta = item["meta"]
 
     url = get_value("url", request, kwargs, rvs=rvs)
-    inner_header = {}
+    inner_headers = {}
 
     for ik, k, objs, dft in (
         (InnerHeaderKeys.VERSION, "spage_version", (meta, kwargs), "1.2"),
@@ -44,9 +45,9 @@ def _spage(item: FetchRecord, rvs=False, **kwargs) -> bytes:
     ):
         v = get_value(k, *objs, rvs=rvs, default=dft)
         if v is not None:
-            inner_header[ik] = v
+            inner_headers[ik] = v
 
-    inner_header[InnerHeaderKeys.DIGEST] = get_value(
+    inner_headers[InnerHeaderKeys.DIGEST] = get_value(
         "spage_digest",
         meta,
         kwargs,
@@ -56,48 +57,49 @@ def _spage(item: FetchRecord, rvs=False, **kwargs) -> bytes:
 
     v = get_value("download_latency", meta, kwargs, rvs=rvs)
     if v is not None:
-        inner_header["Download-Latency"] = round(v)
+        inner_headers["Download-Latency"] = round(v, 5)
 
     v = get_value("fetch_time", meta, kwargs, rvs=rvs)
     if v is not None:
-        inner_header[InnerHeaderKeys.FETCH_TIME] = time.strftime(
+        inner_headers[InnerHeaderKeys.FETCH_TIME] = time.strftime(
             TIME_FORMAT, time.localtime(v)
         )
 
     v = get_value("redirect_urls", meta, kwargs, rvs=rvs)
     if v is not None:
-        inner_header["Redirect-Count"] = len(v)
-        inner_header["Final-Redirect"] = v[-1]
+        inner_headers["Redirect-Count"] = len(v)
+        inner_headers["Final-Redirect"] = v[-1]
 
     status = get_value("status", response, kwargs, rvs=rvs)
-    body = get_value("body", response, kwargs, rvs=rvs)
+    body = kwargs.get("response_body", get_value("body", response))
     if not (status.group == Group.HTTP and (status.code == 200 or status.code == 206)):
-        inner_header[InnerHeaderKeys.TYPE] = RecordTypes.DELETED
-        inner_header["DeadDelete"] = "0"
-        inner_header[
+        inner_headers[InnerHeaderKeys.TYPE] = RecordTypes.DELETED
+        inner_headers["DeadDelete"] = "0"
+        inner_headers[
             InnerHeaderKeys.ERROR_REASON
         ] = f"{Group(status.group).name} {status.code}"
         size = 0 if not body else len(body)
-        inner_header[InnerHeaderKeys.ORIGINAL_SIZE] = size
+        inner_headers[InnerHeaderKeys.ORIGINAL_SIZE] = size
 
-    v = get_value("headers", request, kwargs, rvs=rvs)
-    if v is not None:
-        if hasattr(v, "to_unicode_dict"):
-            v = v.to_unicode_dict()
-        if InnerHeaderKeys.USER_AGENT in v:
-            inner_header[InnerHeaderKeys.USER_AGENT] = v[InnerHeaderKeys.USER_AGENT]
+    ua = kwargs.get("user_agent")
+    if not ua:
+        headers = request["headers"]
+        if b"User-Agent" in headers:
+            ua = to_unicode(headers.get(b"User-Agent"), encoding=headers.encoding)
+    if ua:
+        inner_headers[InnerHeaderKeys.USER_AGENT] = ua
 
-    http_header = get_value("headers", response, kwargs, rvs=rvs)
-    if http_header is not None:
-        if hasattr(http_header, "to_unicode_dict"):
-            http_header = http_header.to_unicode_dict()
+    http_headers = kwargs.get("http_headers", get_value("headers", response))
+    if http_headers is not None:
+        if hasattr(http_headers, "to_unicode_dict"):
+            http_headers = http_headers.to_unicode_dict()
 
     spage = BytesIO()
     write(
         spage,
         url,
-        inner_header=inner_header,
-        http_header=http_header,
+        inner_header=inner_headers,
+        http_header=http_headers,
         data=body,
     )
     spage.seek(0)
